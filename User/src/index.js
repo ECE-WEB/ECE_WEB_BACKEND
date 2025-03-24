@@ -1,0 +1,10 @@
+const express = require('express')
+const app = express()
+const {envconfig} = require('./config/index')
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
+const api = require('./routers')
+app.use('/api',api)
+app.listen(envconfig.PORT,()=>{
+    console.log(`Server is running on port ${envconfig.PORT}`)
+})
