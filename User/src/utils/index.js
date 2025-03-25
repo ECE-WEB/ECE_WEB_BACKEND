@@ -1,4 +1,5 @@
 module.exports={
     success:require('./success'),
-    fail:require('./fail')
+    fail:require('./fail'),
+    bcryptutils:require('./checkpassword')
 }
