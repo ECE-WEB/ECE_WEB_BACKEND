@@ -1,0 +1,11 @@
+const express = require('express')
+const app = express()
+const {envconfig,connectDB} = require('./config/index')
+app.use(express.json())
+app.use(express.urlencoded({extended:true}))
+const api = require('./routers')
+app.use('/api',api)
+connectDB()
+app.listen(envconfig.PORT,()=>{
+    console.log(`Server is running on port ${envconfig.PORT}`)
+})
