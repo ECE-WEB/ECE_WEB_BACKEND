@@ -32,7 +32,16 @@ async function checkuserservice(data){
         throw error
     }
 }
+async function getalluserservice(){
+    try {
+        const alluser_data = await userservice.getAll()
+        return alluser_data
+    } catch (error) {
+        throw error
+    }
+}
 module.exports={
     createuserservice,
-    checkuserservice
+    checkuserservice,
+    getalluserservice
 }
