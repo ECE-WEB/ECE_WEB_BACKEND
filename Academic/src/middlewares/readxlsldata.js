@@ -4,7 +4,7 @@ function ReadExcel(req,res,next){
         return res.status(400).json({ error: "No file uploaded" });
     }
     try {
-        
+        console.log('came to the read excel middleware')
         const data = XLSX.read(req.file.buffer, { type: 'buffer' });
         let allsheetsdata = {}
         console.log(data.SheetNames.length ,'this is length of the total sheet lenghts')
