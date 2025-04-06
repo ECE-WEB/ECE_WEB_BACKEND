@@ -7,7 +7,7 @@ async function createusercontroller(req,res){
         success.data=user
         return res.status(201).json(success)   
     } catch (error) {
-        fail.error=error
+        fail.error=error.message
         return res.status(500).json(fail)
     }
 }
