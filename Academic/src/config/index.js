@@ -1,3 +1,5 @@
 module.exports={
-    envconfig:require('./envconfig')
+    envconfig:require('./envconfig'),
+    checkserver:require('./checkserver'),
+    connectDB:require('./db')
 }
