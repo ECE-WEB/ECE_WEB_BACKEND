@@ -1,6 +1,6 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt');
-const UserSchema = mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     firstName:{
         type:String,
         required:true
@@ -8,6 +8,10 @@ const UserSchema = mongoose.Schema({
     lastName:{
         type:String,
         required:true
+    },
+    student_id:{
+        type:String,
+        default:null
     },
     email:{
         type:String,
