@@ -6,8 +6,11 @@ app.use(express.urlencoded({extended:false}))
 const api = require('./routers/index')
 app.use('/api',api)
 const PORT=envconfig.PORT
-connectDB()
-app.listen(PORT,()=>{
-    console.log(`Listening On Port:${PORT}`)
-    
+connectDB().then(()=>{
+    app.listen(PORT,()=>{
+        console.log(`Listening On Port:${PORT}`)
+        
+    })
+}).catch((err)=>{
+    console.log('Error  While Connecting to the Db',err)
 })

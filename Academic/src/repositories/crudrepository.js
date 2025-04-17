@@ -18,5 +18,14 @@ class crudrepository{
             throw error
         }
     }
+    async findbyid(id){
+        try {
+            const response= await this.model.findById(id)
+            return response
+        } catch (error) {
+            throw error
+        }
+
+    }
 }
 module.exports=crudrepository

@@ -4,5 +4,6 @@ const app = require("express").Router()
 const {upload} = require("../../utils/index")
 
 app.post('/',upload.single('marks'),ReadExcel,markscontroller.createmarkscontroller)
+app.get('/:id',markscontroller.getmarkscontrollerbyid)
 app.get('/',markscontroller.getmarkscontroller)
 module.exports=app

@@ -143,7 +143,17 @@ async function getmarksservice(data){
         throw error
     }
 }
+async function getmarksbyid(data){
+    try {
+        console.log(data ,'this is user_id')
+        const user_marks = await marksservice.findbyid(data.id)
+        return user_marks
+    } catch (error) {
+        throw error
+    }
+}
 module.exports={
     createmarksservice,
-    getmarksservice
+    getmarksservice,
+    getmarksbyid
 }

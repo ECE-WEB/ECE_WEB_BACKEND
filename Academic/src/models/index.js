@@ -1,4 +1,6 @@
 module.exports={
     Marks:require('./marks'),
-    Subjects:require('./subjects')
+    Subjects:require('./subjects'),
+    Attendance:require('./attendance'),
+    Section:require('./section')
 }
