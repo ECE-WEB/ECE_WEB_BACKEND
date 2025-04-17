@@ -1,4 +1,6 @@
 module.exports={
     marksrepository:require("./marksrepository"),
-    subjectrepository:require("./subjectrepository")   
+    subjectrepository:require("./subjectrepository"),
+    attendancerepository:require("./attendancerepository"),
+    sectionrepository:require("./sectionrepository")
 }
