@@ -9,24 +9,27 @@ const UserSchema = new mongoose.Schema({
         type:String,
         required:true
     },
-    student_id:{
-        type:String,
-        default:null
-    },
     email:{
         type:String,
         required:true,
-        unique:true
+        unique:true,
+        match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address.']
+
     },
     password:{
         type:String,
         required:true,
-        
+        minlength: 6,
+        validate: {
+            validator: function (value) {
+                return /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(value);
+            },
+            message: props => `${props.value} is not a valid password!,Password must be at least 6 characters long and contain both letters and numbers.`
+        }
     },
     role:{
         type:String,
-        enum:['admin','faculty','alumni','student'],
-        default:'student'
+        enum:['admin','faculty','alumni','student','superadmin'],
     }
     
 },
