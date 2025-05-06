@@ -7,8 +7,9 @@ async function createusercontroller(req,res){
         success.data=user
         return res.status(201).json(success)   
     } catch (error) {
-        fail.error=error.message
-        return res.status(500).json(fail)
+        fail.error=error.message || error 
+        const statusCode = error.statusCode || 500
+        return res.status(statusCode).json(fail)
     }
 }
 async function checkusercontroller(req,res){
