@@ -32,6 +32,7 @@ async function createuserservice(data){
 async function checkuserservice(data){
     try {
         const {passworderrorresponse} = usererrorresponses
+        
         passworderrorresponse(data)
         // checking correct email format because we dont wheter about login user
         if(!data.email.match(/^\S+@\S+\.\S+$/)){
@@ -44,14 +45,14 @@ async function checkuserservice(data){
        
         if(loginuser){
             if(await bcryptutils.checkhashpassword(data.password,loginuser.password)){
-                return  jwtutils.generatetoken(user)
+                return  jwtutils.generatetoken(loginuser)
             }
-            const error = new Error('Invalid password. Please check and try again.')
+            const error = new Error('Email and password do not match. Please check your credentials and try again.')
             error.statusCode = 401
             throw error
         }
         else{
-            const error= new Error('Invalid email format. Please check and try again.')
+            const error= new Error('Email not found. Please check the email address and try again.')
             error.statusCode = 404
             throw error
 
@@ -62,13 +63,23 @@ async function checkuserservice(data){
 }
 async function getalluserservice(data){
     try {
-        if(!data.role){
-            if(data.role!=='admin' && data.role!=='superadmin'){
-                const error = new Error('You are not authorized to access this resource')
-                error.statusCode = 403
-                throw error
-            }
+        
+        if(!data){
+            const error = new Error('User not found')
+            error.statusCode = 404
+            throw error
         }
+        if(!data.role){
+            const error = new Error('Role not found')
+            error.statusCode = 404
+            throw error
+        }
+        if((data.role!=='admin' && data.role!=='superadmin')){
+            const error = new Error('You are not authorized to access this resource')
+            error.statusCode = 403
+            throw error
+        }
+        
         const alluser_data = await userservice.getAll()
         return alluser_data
     } catch (error) {
