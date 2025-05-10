@@ -10,8 +10,6 @@ function verfiytoken(req, res, next) {
             fail.error="Authorization token is missing."
             return res.status(401).json(fail);
         }
-
-        
         const secret = process.env.JWT_SECRET
         const user = jwt.verify(token, secret);
 

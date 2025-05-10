@@ -46,8 +46,19 @@ function roleerrorresponse(data){
         }
     }
 }
+function studentiderrorresponse(data){
+    if(data.student_id){
+        const studentIdRegex = /^[rR][0-9]{6}$/;
+        if (data.role==='student' && !studentIdRegex.test(data.student_id)) {
+            const error = new Error('Invalid student ID format, please check the student ID');
+            error.statusCode = 400;
+            throw error;
+        }
+    }
+}
 module.exports={
     emailerrorresponse,
     passworderrorresponse,
-    roleerrorresponse
+    roleerrorresponse,
+    studentiderrorresponse
 }    

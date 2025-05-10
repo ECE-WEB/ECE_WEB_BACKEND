@@ -26,6 +26,18 @@ const signupValidation =[
     .withMessage('Last name must contain only letters')
     .escape()
     ,
+    check('student_id')
+    .notEmpty()
+    .withMessage('Student ID is required')
+    .bail()
+    .isLength({ min:7, max:7 })
+    .withMessage('Student ID must be at least 7 characters long')
+    .bail()
+    .isAlphanumeric()
+    .withMessage('Student ID must contain only alphanumeric characters')
+    .bail()
+    .escape()
+    ,
     check('email')
     .notEmpty()
     .withMessage('Email is required')
