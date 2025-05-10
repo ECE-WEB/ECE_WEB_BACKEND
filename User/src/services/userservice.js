@@ -3,13 +3,18 @@ const userservice = new userrepository()
 const {bcryptutils} = require('../utils/index')
 const {jwtutils} = require('../utils/index')
 const {usererrorresponses} = require("../errors/index")
-const {custom_error} = require('../utils/index')
 async function createuserservice(data){
     try {
-        const {emailerrorresponse,passworderrorresponse,roleerrorresponse} = usererrorresponses
+        const {
+            emailerrorresponse,
+            passworderrorresponse,
+            roleerrorresponse,
+            studentiderrorresponse
+        } = usererrorresponses
         emailerrorresponse(data);
         passworderrorresponse(data);
         roleerrorresponse(data);
+        studentiderrorresponse(data);
         const user = await userservice.create(data)
         if(user){
             return jwtutils.generatetoken(user)

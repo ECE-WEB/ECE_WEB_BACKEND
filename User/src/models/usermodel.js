@@ -30,6 +30,7 @@ const UserSchema = new mongoose.Schema({
         match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address.']
 
     },
+
     password:{
         type:String,
         required:true,
@@ -44,6 +45,19 @@ const UserSchema = new mongoose.Schema({
     role:{
         type:String,
         enum:['admin','faculty','alumni','student','superadmin'],
+    }
+    ,
+    student_id:{
+        type:String,
+        validate: {
+            validator: function (value) {
+                if(this.role !== 'student') {
+                    return true; // Skip validation if role is not 'student'
+                }
+                return /^[rR][0-9]{6}$/.test(value);
+            },
+            message: 'Student ID must contain only alphanumeric characters.'
+        }
     }
     
 },
