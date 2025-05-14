@@ -16,8 +16,8 @@ const SubjectAttendanceSchema = new mongoose.Schema({
 },{_id:false})
 const AttendanceSchema = new mongoose.Schema({
     user_id:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        type:String,
+        required:true
     },
     semester1:[SubjectAttendanceSchema],
     semester2:[SubjectAttendanceSchema],
