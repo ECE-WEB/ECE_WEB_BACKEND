@@ -6,8 +6,10 @@ async function createannoucementscontroller(req,res){
         success.data=newannouncement
         return res.status(201).json(success)
     } catch (error) {
-        fail.error=error
-        return res.status(500).json(fail)
+        
+        fail.error=error.message || error
+        const statusCode = error.statusCode || 500
+        return res.status(statusCode).json(fail)
     }   
 }
 async function getallannoucementscontroller(req,res){
