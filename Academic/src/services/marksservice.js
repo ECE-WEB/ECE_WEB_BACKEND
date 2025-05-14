@@ -1,139 +1,169 @@
-const { ObjectId } = require('mongodb');
+const mongoose = require('mongoose');
 const {marksrepository} = require("../repositories/index");
 const axios = require('axios');
 const marksservice = new marksrepository()
-async function createmarksservice(studentmarks,studentdetails){
+const {marks_error_response} = require("../errors/index")
+
+/**
+ * @function createmarksservice
+ * @description Handles processing and bulk creation/updating of student marks for a given subject and semester.
+ * 
+ * @param {Object} studentmarks - An object containing marks of multiple students from the Excel sheet.
+ * @param {Object} studentdetails - Details of the subject and semester (e.g., subject_id, semester).
+ * 
+ * @returns {Promise<Object>} - The result of the bulk mark operations.
+ * 
+ * @throws Will throw an error pif MongoDB operations fail or data validation throws.
+ */
+async function createmarksservice(studentmarks, studentdetails) {
+    /**
+     * @description
+     * Step 1: Handle errors and validate input data
+     * - subject_id_error_response: Checks if the subject ID exists
+     * - semester_error_response: Validates semester number
+     * - validatexlsheet_error_response: (Commented out) Validates the XLSheet format
+     */
+    const { 
+        subject_id_error_response, 
+        semester_error_response, 
+        validatexlsheet_error_response 
+    } = marks_error_response;
+
+    console.log(studentmarks, studentdetails);
+
+    await subject_id_error_response(studentdetails);
+    semester_error_response(studentdetails);
+
+    /**
+     * Step 2: Flatten the student marks into a single list
+     */
+    let studentMarksList = Object.values(studentmarks).flat();
+    console.log(studentMarksList);
+
     
-    let newstudentmarks = []
-    let values = Object.values(studentmarks)
-    for(let i=0; i<values.length; i++){
-        newstudentmarks.push(...values[i])
-    }
-    
-    const {subject_id,semester,...user_id} = studentdetails
-    if (!subject_id) throw new Error("Enter The Subject Name")
-    if (!semester) throw new Error("Enter The Semester")
+    validatexlsheet_error_response(studentMarksList); 
+
     try {
-        
-        const validatefeilds = newstudentmarks.every((studentmarks)=>{
-            let {student_id,...marks}=studentmarks
-            console.log(student_id,marks)
-            if(!student_id) {
-                console.log(student_id,'false from the student_id')
-                return false
-            }
-            for(const [key,value] of Object.entries(marks)){
-                if(key==="__EMPTY" || value==="" || value ===undefined || value===null){
-                    console.log(key,value)
-                    return false
-                }
-            }
-            return true
-        })
-        
-        if(!validatefeilds){
-            throw new Error("Please Check The Marks Sheet For Missing Fields. Student ID or Marks  Feild Is Missing or Both Feilds Are Missing")
-        } 
-        let user_id_marks=[]
-        const users_data = await  axios.get('http://localhost:9002/api/v1/user/')
-        
-        newstudentmarks.forEach((student)=>{
-            let {student_id,...marks} = student
-            let user_deatils_of_id = users_data.data.data.filter((user)=>user.student_id == student_id)
-            
-            if(user_deatils_of_id.length!=0){
-                
-                const user_id = user_deatils_of_id[0]._id
-                user_id_marks.push({
-                    student_id:user_id,
-                    ...marks
-                })
-            }
-            
+        const { subject_id, semester } = studentdetails;
+        const semesterNumber = `semester${semester}`;
+        const subjectObjectId = new mongoose.Types.ObjectId(subject_id);
 
-           
-        })
-        
-        
-        const alluser_marks= await marksservice.find()
-        
-        let alluser_id_data = alluser_marks.map((student_details)=>student_details.user_id.toString())
-        let tmpsemester = `semester${semester}`
-        const mongosubject_id = new ObjectId(subject_id)
-        let marksquery=[]
-        user_id_marks.forEach((student)=>{
-            const {student_id,...marks} = student
-            
-            if(!alluser_id_data.includes(student_id)){
-               
-                let new_user_marks_creation = 
-                {
-                    updateOne: {
-                        filter: { user_id: student_id },
-                        update: {
-                            $push: {
-                                [tmpsemester]: {
-                                    subject_id: subject_id,
-                                    ...marks
+        let marksquery = [];
+
+        studentMarksList.forEach((student) => {
+            const { student_id, ...marks } = student;
+
+            /**
+             * @description
+             * Build an update object dynamically to update multiple mid marks for a student.
+             * Keys will follow the format: semesterNumber.$[element].midX
+             */
+            let updateMultipleMid = {};
+            for (const [key, value] of Object.entries(marks)) {
+                updateMultipleMid[`${semesterNumber}.$[element].${key}`] = value;
+            }
+
+            /**
+             * @description
+             * Query 1: Insert a new student record with marks if not already present.
+             * Uses $setOnInsert with upsert: true.
+             */
+            let newUserQuery = {
+                updateOne: {
+                    filter: {
+                        user_id: student_id
+                    },
+                    update:{
+                        $setOnInsert: {
+                            [semesterNumber]:
+                                [
+                                    {
+                                        createdAt: new Date(),
+                                        updatedAt: new Date(),
+                                        subject_id: subject_id,
+                                        ...marks
+                                    }
+                                ]
+                        }
+                    }
+                    ,
+                    upsert: true
+                }
+            };
+
+            /**
+             * @description
+             * Query 2: Add a new subject to an existing student record if the subject doesn't exist yet.
+             * Uses $push with $not and $elemMatch.
+             */
+            let addSubjectQuery = {
+                updateOne: {
+                    filter: {
+                        user_id: student_id,
+                        [semesterNumber]: {
+                            $not: {
+                                $elemMatch: {
+                                    subject_id: subjectObjectId
                                 }
                             }
-                        },
-                        upsert: true
-                    }
-                }
-                
-                marksquery.push(new_user_marks_creation)
-                
-
-            }
-            else{
-                let update_multiple_mid={}
-                for(const [key,value] of Object.entries(marks)){
-                    update_multiple_mid[`${tmpsemester}.$[element].${key}`] = value
-                }
-                let new_subject ={
-                    updateOne:{
-                        filter:{user_id:student_id,[tmpsemester]:{$not:{$elemMatch:{subject_id:mongosubject_id}}}},
-                        update:{
-                            $push:{
-                                [tmpsemester]:{
-                                    subject_id:subject_id,
-                                    ...marks
-                                }
-                                
+                        }
+                    },
+                    update: {
+                        $push: {
+                            [semesterNumber]: {
+                                subject_id: subject_id,
+                                ...marks,
+                                createdAt: new Date()
                             }
                         },
-                        upsert:false
-                    }
+                        $set: {
+                            updatedAt: new Date()
+                        }
+                    },
+                    upsert: false
                 }
-                let already_present_subject = {
-                    updateOne:{
-                        filter:{user_id:student_id,[tmpsemester]:{$elemMatch:{subject_id:mongosubject_id}}},
-                        update:{
-                            $set:
-                                update_multiple_mid
-                            
-                        },
-                        arrayFilters: [
-                            { "element.subject_id": mongosubject_id }
-                        ],
-                        upsert:false
-                    }
-                }
-                marksquery.push(already_present_subject,new_subject)
-            }
+            };
 
-        })
-            
-        
-        const studentmarks = await marksservice.bulkcreation(marksquery)
-        return studentmarks
-    } 
-    catch (error) {
-        console.log(error)
-        throw error
+            /**
+             * @description
+             * Query 3: Update the mid marks for an existing subject in the student record.
+             * Uses $set with arrayFilters to target the right subject.
+             */
+            let updateMarksQuery = {
+                updateOne: {
+                    filter: {
+                        user_id: student_id,
+                        [semesterNumber]: {
+                            $elemMatch: {
+                                subject_id: subjectObjectId
+                            }
+                        }
+                    },
+                    update: {
+                        $set: updateMultipleMid
+                    },
+                    arrayFilters: [
+                        { "element.subject_id": subjectObjectId }
+                    ],
+                    upsert: false
+                }
+            };
+
+            // Add all three operations to the bulk query array
+            marksquery.push(newUserQuery, updateMarksQuery,addSubjectQuery);
+        });
+
+        /**
+         * @description
+         * Perform bulk write operation for all the constructed queries.
+         */
+        const studentmarks = await marksservice.bulkcreation(marksquery);
+        return studentmarks;
+    } catch (error) {
+        throw error;
     }
 }
+
 async function getmarksservice(data){
     try {
         console.log(data)

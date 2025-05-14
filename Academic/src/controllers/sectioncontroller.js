@@ -6,7 +6,8 @@ async function createsectioncontroller(req,res){
         success.data = section_details
         return res.status(200).json(success)
     } catch (error) {
-        fail.error=error.message || error
+        fail.message=error.message
+        fail.error=error
         return res.status(500).json(fail)
     }
 }

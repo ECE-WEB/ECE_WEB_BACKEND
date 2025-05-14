@@ -26,8 +26,7 @@ const semesterSchema = new mongoose.Schema({
 }, { _id: false });
 const MarksSchema = new mongoose.Schema({
     user_id:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'users',
+        type:String,
         required:true
     },
     semester1:[SubjectMarksSchema],
