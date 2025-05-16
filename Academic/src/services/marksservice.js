@@ -29,7 +29,7 @@ async function createmarksservice(studentmarks, studentdetails) {
         validatexlsheet_error_response 
     } = marks_error_response;
 
-    console.log(studentmarks, studentdetails);
+    
 
     await subject_id_error_response(studentdetails);
     semester_error_response(studentdetails);
@@ -38,7 +38,7 @@ async function createmarksservice(studentmarks, studentdetails) {
      * Step 2: Flatten the student marks into a single list
      */
     let studentMarksList = Object.values(studentmarks).flat();
-    console.log(studentMarksList);
+    
 
     
     validatexlsheet_error_response(studentMarksList); 
@@ -166,7 +166,7 @@ async function createmarksservice(studentmarks, studentdetails) {
 
 async function getmarksservice(data){
     try {
-        console.log(data)
+        
         const studentmarks = await marksservice.find(data)
         return studentmarks
     } catch (error) {
@@ -175,7 +175,7 @@ async function getmarksservice(data){
 }
 async function getmarksbyid(data){
     try {
-        console.log(data ,'this is user_id')
+        
         const user_marks = await marksservice.findbyid(data.id)
         return user_marks
     } catch (error) {

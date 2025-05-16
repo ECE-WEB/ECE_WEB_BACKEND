@@ -1,5 +1,4 @@
 const { default: mongoose } = require("mongoose");
-const {Subjects} = require("../models/index")
 async function subject_id_error_response(data) {
     if(!data.subject_id) {
         const error = new Error("subject_id is required")
@@ -30,7 +29,7 @@ function semester_error_response(data){
         error.statusCode = 400
         throw error
     }
-    const {semester} = data
+    const semester = parseInt(data.semester)
     if(semester<1 || semester>8){
         const error = new Error("Invalid semester please check  exist of semester.")
         error.statusCode = 404

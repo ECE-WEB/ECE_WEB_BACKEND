@@ -1,18 +1,26 @@
 const {sectionrepository} = require("../repositories/index")
 const sectionservice = new sectionrepository()
-async function createsectionservice(xldata,semester){
-    
+const {section_error_response,marks_error_response} = require("../errors/index") 
+async function createsectionservice(xldata,data){
     try {
-        const data  =[]
-        for(let [key,value] of Object.entries(xldata)){
-            
-           
-                data.push(...value);
-            
-           
-         
-        }
-        const section_details = await sectionservice.insertall(data)
+        const {
+            semester_error_response
+        }= marks_error_response
+        semester_error_response(data)
+        const studentSections= Object.values(xldata).flat()
+        const semesterNumber = parseInt(data.semester)
+        
+        const {
+            validate_section_error_response
+        }= section_error_response
+        
+        validate_section_error_response(studentSections)
+        const sectiondata = studentSections.map(student=>({
+            ...student,
+            semester:semesterNumber
+        }))
+        
+        const section_details = await sectionservice.insertall(sectiondata)
         return section_details
 
     }
@@ -22,9 +30,7 @@ async function createsectionservice(xldata,semester){
 }
 async function getallsectiondetails(query={}){
     try {
-        console.log(query)
         const section_details = await sectionservice.find(query)
-        console.log(section_details,'these are section details')
         return section_details
     } catch (error) {
         throw error

@@ -1,11 +1,9 @@
 const axios = require('axios');
 const {attendancerepository} = require("../repositories/index");
 const sectionservice = require("./sectionservice");
-const { ObjectId } = require('mongodb');
-const {envconfig} = require("../config/index");
 const { default: mongoose } = require('mongoose');
-const attendanceservice = new attendancerepository()
-const {attendance_error_response} = require("../errors/index")
+const attendanceRepo = new attendancerepository()
+const {attendance_error_response,marks_error_response} = require("../errors/index")
 async function createnewattendaceuserservice(data){
     let {
         section,
@@ -19,13 +17,21 @@ async function createnewattendaceuserservice(data){
         section_error_response,
         present_students_error_response
     } = attendance_error_response
+    const {
+        subject_id_error_response,
+        semester_error_response
+    } = marks_error_response
+    semester_error_response(data)
     total_class_taken_error_response(data)
+    await section_error_response(data)
+    await subject_id_error_response(data)
     total_class_taken=parseInt(total_class_taken)
+
     const sectionLowercase = section.toLowerCase()
+
     const sectionquery = {section:sectionLowercase,semester:semester};
-    const student_section_details=await sectionservice.getallsectiondetails(sectionquery);
-    console.log(student_section_details)
-    section_error_response(data)
+    const student_section_details= await sectionservice.getallsectiondetails(sectionquery);
+    
     const attendanceList=present_students_error_response(present_students,student_section_details) 
     try {
         const subjectObjectId=new mongoose.Types.ObjectId(subject_id)
@@ -158,10 +164,8 @@ async function createnewattendaceuserservice(data){
             
         })
         
-        // console.log(attendancequery ,'this is an attendance query')
-        const student_attendance = await attendanceservice.bulkcreation(attendancequery)
+        const student_attendance = await attendanceRepo.bulkcreation(attendancequery)
         
-        console.log(student_attendance);
         return student_attendance
     } catch (error) {
         throw error
@@ -169,17 +173,24 @@ async function createnewattendaceuserservice(data){
 }
 async function getallstudentattendance(query={}){
     try {
-        console.log(
-            query
-        )
-        const student_attendance = await attendanceservice.find(query)
+        
+        const student_attendance = await attendanceRepo.find(query)
         return student_attendance
     } catch (error) {
         console.error(error);
         throw error;
     }
 }
+async function groupallsectionbysemester(grouping_field,filter){
+    try {
+        const sections = await attendanceRepo.groupsectionofsemester(grouping_field,filter)
+        return sections
+    } catch (error) {
+        throw error
+    }
+}
 module.exports={
     createnewattendaceuserservice,
-    getallstudentattendance
+    getallstudentattendance,
+    groupallsectionbysemester
 }
