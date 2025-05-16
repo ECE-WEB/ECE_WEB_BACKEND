@@ -7,8 +7,8 @@ async function createsectioncontroller(req,res){
         return res.status(200).json(success)
     } catch (error) {
         fail.message=error.message
-        fail.error=error
-        return res.status(500).json(fail)
+        const statusCode = error.statusCode || 500 
+        return res.status(statusCode).json(fail)
     }
 }
 async function getsectioncontroller(req,res){
